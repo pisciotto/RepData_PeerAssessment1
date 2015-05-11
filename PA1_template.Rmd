@@ -28,11 +28,10 @@ ggplot(data=average, aes(x=interval, y=steps)) +
     ylab("average number of steps taken")
 
 
-## ------------------------------------------------------------------------
+## Average
 average[which.max(average$steps),]
 
-
-## ----how_many_missing----------------------------------------------------
+## Imputing missing values
 
 missing <- is.na(data$steps)
 
@@ -73,13 +72,11 @@ weekday_weekend <- function(date) {
 filled_data$date <- as.Date(filled_data$date)
 filled_data$day <- sapply(filled_data$date, FUN=weekday_weekend)
 
+## Are there differences in activity patterns between weekdays and weekends?
 
-## ------------------------------------------------------------------------
 average <- aggregate(steps ~ interval + day, data=filled_data, mean)
 ggplot(average, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
     xlab("5-minute interval") + ylab("Number of steps")
-
-
 
 ---
 
@@ -91,8 +88,6 @@ ggplot(average, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
 
 
 
-## Imputing missing values
 
 
 
-## Are there differences in activity patterns between weekdays and weekends?
