@@ -1,20 +1,93 @@
----
 title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
 ---
 
-
 ## Loading and preprocessing the data
 
-
+unzip(zipfile="activity.zip")
+data <- read.csv("activity.csv")
 
 ## What is mean total number of steps taken per day?
 
-
+library(ggplot2)
+total_steps <- tapply(data$steps, data$date, FUN=sum, na.rm=TRUE)
+qplot(total_steps, binwidth=1000, xlab="total number of steps taken per day")
+mean(total_steps, na.rm=TRUE)
+median(total_steps, na.rm=TRUE)
 
 ## What is the average daily activity pattern?
+
+library(ggplot2)
+average <- aggregate(x=list(steps=data$steps), by=list(interval=data$interval),
+                      FUN=mean, na.rm=TRUE)
+ggplot(data=average, aes(x=interval, y=steps)) +
+    geom_line() +
+    xlab("5-minute interval") +
+    ylab("average number of steps taken")
+
+
+## ------------------------------------------------------------------------
+average[which.max(average$steps),]
+
+
+## ----how_many_missing----------------------------------------------------
+
+missing <- is.na(data$steps)
+
+##  How many missing
+table(missing)
+
+## ------------------------------------------------------------------------
+# Replace each missing value with the mean value of its 5-minute interval
+fill_value <- function(steps, interval) {
+    filled <- NA
+    if (!is.na(steps))
+        filled <- c(steps)
+    else
+        filled <- (average[average$interval==interval, "steps"])
+    return(filled)
+}
+filled_data <- data
+filled_data$steps <- mapply(fill.value, filled_data$steps, filled_data$interval)
+
+
+## ------------------------------------------------------------------------
+total_steps <- tapply(filled_data$steps, filled_data$date, FUN=sum)
+qplot(total_steps, binwidth=1000, xlab="total number of steps taken each day")
+mean(total_steps)
+median(total_steps)
+
+
+## ------------------------------------------------------------------------
+weekday_weekend <- function(date) {
+    day <- weekdays(date)
+    if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+        return("weekday")
+    else if (day %in% c("Saturday", "Sunday"))
+        return("weekend")
+    else
+        stop("invalid date")
+}
+filled_data$date <- as.Date(filled_data$date)
+filled_data$day <- sapply(filled_data$date, FUN=weekday_weekend)
+
+
+## ------------------------------------------------------------------------
+average <- aggregate(steps ~ interval + day, data=filled_data, mean)
+ggplot(average, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
+    xlab("5-minute interval") + ylab("Number of steps")
+
+
+
+---
+
+
+
+
+
+
 
 
 
