@@ -5,33 +5,29 @@
 unzip(zipfile="activity.zip")
 data <- read.csv("activity.csv")
 ```
-
 ## What is mean total number of steps taken per day?
 ```{r}
 library(ggplot2)
-total.steps <- tapply(data$steps, data$date, FUN=sum, na.rm=TRUE)
-qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
-mean(total.steps, na.rm=TRUE)
-median(total.steps, na.rm=TRUE)
+total_steps <- tapply(data$steps, data$date, FUN=sum, na.rm=TRUE)
+qplot(total_steps, binwidth=1000, xlab="total number of steps taken each day")
+mean(total_steps, na.rm=TRUE)
+median(total_steps, na.rm=TRUE)
 ```
-
 ## What is the average daily activity pattern?
 ```{r}
 library(ggplot2)
-averages <- aggregate(x=list(steps=data$steps), by=list(interval=data$interval),
+average <- aggregate(x=list(steps=data$steps), by=list(interval=data$interval),
                       FUN=mean, na.rm=TRUE)
-ggplot(data=averages, aes(x=interval, y=steps)) +
+ggplot(data=average, aes(x=interval, y=steps)) +
     geom_line() +
     xlab("5-minute interval") +
     ylab("average number of steps taken")
 ```
-
 On average across all the days in the dataset, the 5-minute interval contains
 the maximum number of steps?
 ```{r}
-averages[which.max(averages$steps),]
+average[which.max(average$steps),]
 ```
-
 ## Imputing missing values
 
 There are many days/intervals where there are missing values (coded as `NA`). The presence of missing days may introduce bias into some calculations or summaries of the data.
@@ -41,30 +37,29 @@ missing <- is.na(data$steps)
 # How many missing
 table(missing)
 ```
-
 All of the missing values are filled in with mean value for that 5-minute
 interval.
 
 ```{r}
 # Replace each missing value with the mean value of its 5-minute interval
-fill.value <- function(steps, interval) {
-    filled <- NA
+value <- function(steps, interval) {
+    fill <- NA
     if (!is.na(steps))
-        filled <- c(steps)
+        fill <- c(steps)
     else
-        filled <- (averages[averages$interval==interval, "steps"])
-    return(filled)
+        fill <- (average[average$interval==interval, "steps"])
+    return(fill)
 }
-filled.data <- data
-filled.data$steps <- mapply(fill.value, filled.data$steps, filled.data$interval)
+fill_data <- data
+fill_data$steps <- mapply(fill, fill_data$steps, fill_data$interval)
 ```
 Now, using the filled data set, let's make a histogram of the total number of steps taken each day and calculate the mean and median total number of steps.
 
 ```{r}
-total.steps <- tapply(filled.data$steps, filled.data$date, FUN=sum)
-qplot(total.steps, binwidth=1000, xlab="total number of steps taken each day")
-mean(total.steps)
-median(total.steps)
+total_steps <- tapply(fill_data$steps, fill_data$date, FUN=sum)
+qplot(total_steps, binwidth=1000, xlab="total number of steps taken each day")
+mean(total_steps)
+median(total_steps)
 ```
 
 Mean and median values are higher after imputing missing data. The reason is
@@ -79,7 +74,7 @@ First, let's find the day of the week for each measurement in the dataset. In
 this part, we use the dataset with the filled-in values.
 
 ```{r}
-weekday.or.weekend <- function(date) {
+weekday_weekend <- function(date) {
     day <- weekdays(date)
     if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
         return("weekday")
@@ -88,14 +83,14 @@ weekday.or.weekend <- function(date) {
     else
         stop("invalid date")
 }
-filled.data$date <- as.Date(filled.data$date)
-filled.data$day <- sapply(filled.data$date, FUN=weekday.or.weekend)
+fill_data$date <- as.Date(fill_data$date)
+fill_data$day <- sapply(fill_data$date, FUN=weekday_weekend)
 ```
 
 Now, let's make a panel plot containing plots of average number of steps taken
 on weekdays and weekends.
 ```{r}
-averages <- aggregate(steps ~ interval + day, data=filled.data, mean)
-ggplot(averages, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
+average <- aggregate(steps ~ interval + day, data=fill_data, mean)
+ggplot(average, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) +
     xlab("5-minute interval") + ylab("Number of steps")
 ```
