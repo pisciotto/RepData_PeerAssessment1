@@ -46,7 +46,7 @@ missing <- is.na(data$steps)
 # How many missing
 table(missing)
 ```
-All of the missing values are filled in with mean value for that 5-minute
+The missing values are completed with mean value for that 5-minute
 interval.
 
 ```{r}
@@ -62,7 +62,7 @@ value <- function(steps, interval) {
 fill_data <- data
 fill_data$steps <- mapply(value, fill_data$steps, fill_data$interval)
 ```
-Now, using the filled data set, let's make a histogram of the total number of steps taken each day and calculate the mean and median total number of steps.
+With the fill_data set, use histogram for the total number of steps taken each day and compute the mean and median total number of steps.
 
 ```{r}
 total_steps <- tapply(fill_data$steps, fill_data$date, FUN=sum)
@@ -70,12 +70,10 @@ qplot(total_steps, binwidth=1000, xlab="total number of steps taken each day")
 mean(total_steps)
 median(total_steps)
 ```
-
-Mean and median values are higher after imputing missing data. The reason is
-that in the original data, there are some days with `steps` values `NA` for 
-any `interval`. The total number of steps taken in such days are set to 0s by
-default. However, after replacing missing `steps` values with the mean `steps`
-of associated `interval` value, these 0 values are removed from the histogram
+The mean and median values are higher after imputing missing data. In the original data
+there are some days with `steps` values `NA` for 
+any `interval`. After replacing missing `steps` values with the mean `steps`
+for the associated `interval` value, these 0 values are removed from the plot
 of total number of steps taken each day.
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -95,8 +93,7 @@ weekday_weekend <- function(date) {
 fill_data$date <- as.Date(fill_data$date)
 fill_data$day <- sapply(fill_data$date, FUN=weekday_weekend)
 ```
-
-Now, let's make a panel plot containing plots of average number of steps taken
+Use facet_grid to compara average number of steps taken
 on weekdays and weekends.
 ```{r}
 average <- aggregate(steps ~ interval + day, data=fill_data, mean)
